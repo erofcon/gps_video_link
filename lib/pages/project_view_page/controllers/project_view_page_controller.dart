@@ -76,38 +76,42 @@ class ProjectViewPageController extends GetxController {
         }
       }
     });
-
-    // await cameraController.lockCaptureOrientation(DeviceOrientation.landscapeLeft);
   }
 
   void changeVideoStream() async {
-    if (videoStream) {
-      final file = await cameraController.stopVideoRecording();
-      await stopLocationPositionStream();
-      _videoPath = file.path;
 
-      _insertDB();
-      _mainPageController.getDBData();
-      videoStream = false;
-      GallerySaver.saveVideo(file.path);
-      update();
-    } else {
-      await cameraController.prepareForVideoRecording();
-      await cameraController.startVideoRecording();
-      runLocationPositionStream();
-      videoStream = true;
-      update();
-    }
+    XFile file = await cameraController.takePicture();
+
+    GallerySaver.saveImage(file.path);
+
+    // if (videoStream) {
+    //   // final file = await cameraController.stopVideoRecording();
+    //   // await stopLocationPositionStream();
+    //   // _videoPath = file.path;
+    //   //
+    //   // _insertDB();
+    //   // _mainPageController.getDBData();
+    //   // videoStream = false;
+    //   // GallerySaver.saveVideo(file.path);
+    //   // update();
+    // } else {
+    //   // await cameraController.lockCaptureOrientation(DeviceOrientation.landscapeLeft);
+    //   // await cameraController.prepareForVideoRecording();
+    //   // await cameraController.startVideoRecording();
+    //   // runLocationPositionStream();
+    //   // videoStream = true;
+    //   // update();
+    // }
   }
 
-  void runLocationPositionStream() {
+  void _runLocationPositionStream() {
     _locationService.locationPositionStream((pos) {
       _gpx.wpts
           .add(Wpt(lat: pos.latitude, lon: pos.longitude, time: pos.timestamp));
     });
   }
 
-  Future<void> stopLocationPositionStream() async {
+  Future<void> _stopLocationPositionStream() async {
     _locationService.dispose();
     _gpxPath = await WriteFile().writeGpxFile(GpxWriter().asString(_gpx));
   }
@@ -122,7 +126,4 @@ class ProjectViewPageController extends GetxController {
     await _mainPageController.database.insert(Constants.databaseTableName, model.toMap());
   }
 
-// Future<void> shareFile() async {
-//   Share.shareXFiles([videoPath!], text: 'Great picture');
-// }
 }
