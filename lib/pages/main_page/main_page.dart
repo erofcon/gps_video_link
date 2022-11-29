@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../routes/routes.dart';
-import '../project_view_page/project_view_page.dart';
 import 'controllers/main_page_controller.dart';
 
 class MainPage extends StatelessWidget {
@@ -23,9 +22,13 @@ class MainPage extends StatelessWidget {
           body: const SafeArea(
             child: _DBDataList(),
           ),
-          floatingActionButton: FloatingActionButton(
-            onPressed: () => Get.toNamed(Routes.cameraView),
-            child: const Icon(Icons.camera),
+          floatingActionButton: SizedBox(
+            height: 75,
+            width: 75,
+            child: FloatingActionButton(
+              onPressed: () => Get.toNamed(Routes.cameraView),
+              child: const Icon(Icons.camera, size: 45),
+            ),
           ),
         );
       }
@@ -49,11 +52,6 @@ class _DBDataList extends StatelessWidget {
                 IconButton(
                   icon: const Icon(Icons.upload_file),
                   onPressed: () {},
-                ),
-                IconButton(
-                  icon: const Icon(Icons.share),
-                  onPressed: () =>
-                      controller.shareFile(controller.saveData[index]["id"]),
                 ),
                 IconButton(
                   icon: const Icon(Icons.delete),

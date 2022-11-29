@@ -113,7 +113,7 @@ class ProjectViewPageController extends GetxController {
 
   Future<void> _stopLocationPositionStream() async {
     _locationService.dispose();
-    _gpxPath = await WriteFile().writeGpxFile(GpxWriter().asString(_gpx));
+    // _gpxPath = await WriteFile().writeGpxFile(GpxWriter().asString(_gpx));
   }
 
   void _insertDB() async {

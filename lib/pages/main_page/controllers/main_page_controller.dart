@@ -1,12 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:path/path.dart';
-import 'package:share_plus/share_plus.dart';
-import 'package:sqflite/sqflite.dart';
-import 'package:gps_video_link/shared_components/db_model.dart';
 import 'package:gps_video_link/utils/constants.dart';
-
-import '../../../services/storage_service.dart';
+import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart';
 
 class MainPageController extends GetxController {
   late Database database;
@@ -20,18 +18,25 @@ class MainPageController extends GetxController {
 
   @override
   void onInit() {
-    _controllerInit();
     super.onInit();
+    _controllerInit();
   }
 
   @override
   void onClose() {
+    super.onClose();
     database.close();
     projectNameTextEditingController.dispose();
-    super.onClose();
   }
 
   void _controllerInit() async {
+    await _getDatabase();
+    saveData = await _returnDBData();
+    pageLoading = false;
+    update();
+  }
+
+  Future<void> _getDatabase() async {
     database = await openDatabase(
       join(await getDatabasesPath(), Constants.databaseName),
       onCreate: (db, version) {
@@ -40,57 +45,30 @@ class MainPageController extends GetxController {
       },
       version: 1,
     );
-
-    saveData = await returnDBData();
-    print(saveData);
-    pageLoading = false;
-    update();
   }
 
-  Future<List<Map<String, Object?>>> returnDBData() async {
+  Future<List<Map<String, Object?>>> _returnDBData() async {
     return await database.query(Constants.databaseTableName);
   }
 
-  Future<void> getDBData()async{
+  Future<void> getDBData() async {
     saveData = await database.query(Constants.databaseTableName);
     update();
   }
 
-  void insertDB() async {
-    DBModel model = DBModel(
-        projectName: "123",
-        createDateTime: DateTime.now().toIso8601String(),
-        gpxPath: "ssdds",
-        videoPath: "sdsdsdsd");
-
-    if (await database.insert(Constants.databaseTableName, model.toMap()) !=
-        0) {
-      saveData = await returnDBData();
-      update();
-    }
-  }
-
-  Future<void> shareFile(int projectID) async {
-    List<Map<String, Object?>> result = await database.query(
-        Constants.databaseTableName,
-        where: "id=?",
-        whereArgs: [projectID]);
-  
-    Share.shareXFiles([
-      XFile(result[0]["gpxPath"].toString()),
-      XFile(result[0]["videoPath"].toString())
-    ], text: 'Great picture')
-        .then((value) {
-      StorageService.deleteAppDir;
-      StorageService.deleteCacheDir;
-    });
-  }
-
   void deleteDB(int id) async {
+    List<Map<String, dynamic>> current =
+        saveData.where((element) => element["id"] == id).toList();
+    final videoPath = current.first["videoPath"];
+    final gpxPath = current.first["gpxPath"];
+
+    File(videoPath).delete();
+    File(gpxPath).delete();
+
     if (await database.delete(Constants.databaseTableName,
             where: "id=?", whereArgs: [id]) !=
         0) {
-      saveData = await returnDBData();
+      saveData = await _returnDBData();
       update();
     }
   }
